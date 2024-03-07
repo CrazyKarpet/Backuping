@@ -1,5 +1,9 @@
 #!/bin/bash
 
+SERVER_IP='192.168.122.158'
+SERVER_HOSTNAME='backup-srv01'
+CLIENT_PASSWD='Pa$$w0rd'
+
 ## Install apache2
 
 # Vérifier si l'utilisateur est root
@@ -14,24 +18,16 @@ apt-get update
 # Installation d'Apache2
 apt-get install -y apache2
 
-# Démarrer Apache2
-systemctl start apache2
-
-# Activer Apache2 au démarrage du système
-systemctl enable apache2
+# Démarrer Apache2 et activer Apache2 au démarrage du système
+systemctl enable --now start apache2
 
 echo "L'installation d'Apache2 sur Debian est terminée."
-
-
-
-
-
 
 ## Install Serveur de fichier
 
 # Installation de Samba
-apt update
-apt install samba
+apt-get  update
+apt-get install -y samba
 
 # Configuration de Samba
 cp /etc/samba/smb.conf /etc/samba/smb.conf_backup # Sauvegarde du fichier de configuration original
@@ -59,19 +55,15 @@ EOF
 mkdir -p /srv/RH
 chmod -R 777 /srv/RH
 
-
 mkdir -p /srv/RH/exemple1
 touch /srv/RH/File1
 
 # Redémarrage du service Samba
 systemctl restart smbd
 
-
+systemctl enable --now start smbd
 
 ## Install bareos client
-
-
-CLIENT_PASSWD='Pa$$w0rd'
 
 apt-get update && apt-get install -y gnupg2
 
@@ -91,4 +83,4 @@ EOF
 
 systemctl enable --now bareos-filedaemon.service
 
-echo '192.168.16.15 backup-srv01' 1>>/etc/hosts
+echo "${SERVER_IP} ${SERVER_HOSTNAME}" 1>>/etc/hosts
