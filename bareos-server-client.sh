@@ -1,8 +1,47 @@
 #!/bin/bash
 
 CLIENT_PASSWD='Pa$$w0rd'
-CLIENT_NAME='srvfile-srvweb'
-CLIENT_IP='192.168.122.158'
+WIN_CLIENT_NAME='wincli'
+WIN_CLIENT_IP='192.168.122.110'
+LIN_CLIENT_NAME='srvfile-srvweb'
+LIN_CLIENT_IP='192.168.122.158'
+
+echo "configure add client name=\"${WIN_CLIENT_NAME}\" address=\"${WIN_CLIENT_IP}\" password=\"${CLIENT_PASSWD}\"" | bconsole 1>/dev/null
+
+cat <<EOF > /etc/bareos/bareos-dir.d/job/BackupWindowsFull.conf
+Job {
+  Name = "BackupWindowsFull"
+  Type = Backup
+  Client = ${WIN_CLIENT_NAME}
+  FileSet= "WindowsFull"
+  Storage = File
+  Level = Full
+  Pool = Full
+  Messages = Standard
+}
+EOF
+
+cat <<EOF > /etc/bareos/bareos-dir.d/fileset/WindowsFull.conf
+FileSet {
+  Name = "WindowsFull"
+  Enable VSS = yes
+  Include {
+    Options {
+      Signature = MD5
+      Drive Type = fixed
+      IgnoreCase = yes
+      WildFile = "[A-Z]:/hiberfil.sys"
+      WildFile = "[A-Z]:/pagefile.sys"
+      WildFile = "[A-Z]:/swapfile.sys"
+      WildDir = "[A-Z]:/RECYCLER"
+      WildDir = "[A-Z]:/$RECYCLE.BIN"
+      WildDir = "[A-Z]:/System Volume Information"
+      Exclude = yes
+    }
+    File = "C:/"
+  }
+}
+EOF
 
 echo "configure add client name=\"${CLIENT_NAME}\" address=\"${CLIENT_IP}\" password=\"${CLIENT_PASSWD}\"" | bconsole 1>/dev/null
 
@@ -10,7 +49,7 @@ cat <<EOF 1>/etc/bareos/bareos-dir.d/job/BackupSambaFull.conf
 Job {
   Name = "BackupSambaFull"
   Type = Backup
-  Client = ${CLIENT_NAME}
+  Client = ${LIN_CLIENT_NAME}
   FileSet= "srvfile"
   Storage = File
   Level = Full
@@ -23,7 +62,7 @@ cat <<EOF 1>/etc/bareos/bareos-dir.d/job/BackupWebFull.conf
 Job {
   Name = "BackupWebFull"
   Type = Backup
-  Client = ${CLIENT_NAME}
+  Client = ${LIN_CLIENT_NAME}
   FileSet= "srvweb"
   Storage = File
   Level = Full
@@ -78,7 +117,7 @@ FileSet {
       FS Type = zfs
     }
     File = /var/www
-    File = /etc/apache2/
+    File = /etc/apache2
   }
 }
 EOF
