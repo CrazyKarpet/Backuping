@@ -38,7 +38,7 @@ FileSet {
       WildDir = "[A-Z]:/System Volume Information"
       Exclude = yes
     }
-    File = "C:/"
+    File = "[A-Z]:/"
   }
 }
 EOF
